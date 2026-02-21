@@ -1,3 +1,5 @@
+// FILE: frontend/src/pages/ExamsPage.jsx
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +18,6 @@ const ExamsPage = () => {
           },
         }
       );
-
       setExams(res.data);
     };
 
@@ -24,19 +25,18 @@ const ExamsPage = () => {
   }, []);
 
   return (
-    <div className="p-10 bg-[#001f2f] min-h-screen text-white">
+    <div className="min-h-screen bg-[#001f2f] text-white p-10">
       <h1 className="text-3xl mb-6">Available Exams</h1>
 
       <div className="grid grid-cols-3 gap-6">
         {exams.map((exam) => (
           <div
             key={exam._id}
-            className="bg-[#012a3a] p-6 rounded-xl cursor-pointer"
             onClick={() => navigate(`/exam/${exam._id}`)}
+            className="bg-[#012a3a] p-6 rounded-xl cursor-pointer"
           >
-            <h2 className="text-xl">{exam.title}</h2>
-            <p>{exam.description}</p>
-            <p>Duration: {exam.duration} min</p>
+            <h2>{exam.title}</h2>
+            <p>{exam.duration} minutes</p>
           </div>
         ))}
       </div>

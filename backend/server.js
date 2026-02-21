@@ -5,7 +5,10 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const app = express();   // ✅ CREATE APP FIRST
+const app = express();
+
+// ✅ CREATE APP FIRST
+app.use("/uploads", express.static("uploads"));
 
 // Middlewares
 app.use(cors());

@@ -1,18 +1,62 @@
+// FILE: frontend/src/pages/ExamPage.jsx
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 const ExamPage = () => {
   const { id } = useParams();
   const [exam, setExam] = useState(null);
-  const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(0);
+  const [answers, setAnswers] = useState([]);
   const [score, setScore] = useState(null);
 
+  // ================= FETCH EXAM =================
   useEffect(() => {
     const fetchExam = async () => {
-      const res = await axios.get(
-        `http://localhost:5000/api/exams/${id}`,
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/api/exams/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        setExam(res.data);
+      } catch (error) {
+        console.log("Error loading exam:", error);
+      }
+    };
+
+    fetchExam();
+  }, [id]);
+
+  if (!exam) return <div className="text-white p-10">Loading...</div>;
+
+  // ================= SELECT ANSWER =================
+  const handleSelect = (qIndex, optionIndex) => {
+    const updated = [...answers];
+    updated[qIndex] = optionIndex;
+    setAnswers(updated);
+  };
+
+  // ================= SUBMIT EXAM =================
+  const handleSubmit = async () => {
+    let correct = 0;
+
+    exam.questions.forEach((q, i) => {
+      if (answers[i] === q.correctAnswer) correct++;
+    });
+
+    try {
+      await axios.post(
+        `http://localhost:5000/api/exams/${id}/submit`,
+        {
+          score: correct,
+          total: exam.questions.length,
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -20,79 +64,82 @@ const ExamPage = () => {
         }
       );
 
-      setExam(res.data);
-      setTimeLeft(res.data.duration * 60);
-    };
-
-    fetchExam();
-  }, [id]);
-
-  useEffect(() => {
-    if (timeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  const handleSubmit = () => {
-    let correct = 0;
-
-    exam.questions.forEach((q, index) => {
-      if (answers[index] === q.correctAnswer) {
-        correct++;
-      }
-    });
-
-    setScore(correct);
+      setScore(correct);
+    } catch (error) {
+      console.log("Error saving attempt:", error);
+    }
   };
 
-  if (!exam) return <div>Loading...</div>;
+  // ================= RESULT SCREEN =================
+  if (score !== null) {
+    return (
+      <div className="min-h-screen bg-[#001f2f] text-white">
+        <Navbar />
+        <div className="flex">
+          <Sidebar />
+          <div className="flex-1 p-10">
+            <h1 className="text-3xl mb-4">Result 🎉</h1>
+            <p>
+              Your Score: {score} / {exam.questions.length}
+            </p>
 
+            <button
+              onClick={() => {
+                setScore(null);
+                setAnswers([]);
+              }}
+              className="mt-6 bg-cyan-500 px-6 py-2 rounded"
+            >
+              Retake Exam
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= EXAM SCREEN =================
   return (
-    <div className="p-10 text-white bg-[#001f2f] min-h-screen">
+    <div className="min-h-screen bg-[#001f2f] text-white">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <div className="flex-1 p-10">
 
-      <h1 className="text-3xl mb-4">{exam.title}</h1>
+          <h1 className="text-2xl mb-6">{exam.title}</h1>
 
-      <p className="mb-4">Time Left: {Math.floor(timeLeft / 60)}:{timeLeft % 60}</p>
+          {exam.questions.map((q, qIndex) => (
+            <div
+              key={qIndex}
+              className="mb-6 bg-[#012a3a] p-4 rounded-xl"
+            >
+              <p className="mb-4">{q.question}</p>
 
-      {exam.questions.map((q, index) => (
-        <div key={index} className="mb-6 bg-[#012a3a] p-6 rounded-xl">
-
-          <h2 className="mb-3">{q.question}</h2>
-
-          {q.options.map((opt, i) => (
-            <div key={i}>
-              <label>
-                <input
-                  type="radio"
-                  name={`question-${index}`}
-                  onChange={() =>
-                    setAnswers({ ...answers, [index]: i })
-                  }
-                />
-                {opt}
-              </label>
+              {q.options.map((opt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSelect(qIndex, i)}
+                  className={`block w-full text-left px-4 py-2 mb-2 rounded ${
+                    answers[qIndex] === i
+                      ? "bg-cyan-500"
+                      : "bg-[#001f2f]"
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
             </div>
           ))}
+
+          <button
+            onClick={handleSubmit}
+            className="bg-green-500 px-6 py-2 rounded"
+          >
+            Submit Exam
+          </button>
+
         </div>
-      ))}
-
-      <button
-        onClick={handleSubmit}
-        className="bg-cyan-500 px-6 py-2 rounded-lg"
-      >
-        Submit Exam
-      </button>
-
-      {score !== null && (
-        <h2 className="mt-6 text-2xl">
-          Your Score: {score} / {exam.questions.length}
-        </h2>
-      )}
-
+      </div>
     </div>
   );
 };

@@ -1,3 +1,5 @@
+// FILE: backend/models/Exam.js
+
 const mongoose = require("mongoose");
 
 const questionSchema = new mongoose.Schema({
@@ -12,6 +14,22 @@ const examSchema = new mongoose.Schema(
     description: String,
     duration: Number, // in minutes
     questions: [questionSchema],
+
+    // ✅ ADD ATTEMPTS HERE (INSIDE SCHEMA)
+    attempts: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        score: Number,
+        total: Number,
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

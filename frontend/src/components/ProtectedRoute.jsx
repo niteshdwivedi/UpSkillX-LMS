@@ -1,3 +1,5 @@
+// FILE: frontend/src/components/ProtectedRoute.jsx
+
 import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }) => {
@@ -11,4 +13,3 @@ const ProtectedRoute = ({ children }) => {
 };
 
 export default ProtectedRoute;
-

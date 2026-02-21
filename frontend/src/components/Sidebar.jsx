@@ -1,52 +1,47 @@
+// FILE: frontend/src/components/Sidebar.jsx
+
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const role = localStorage.getItem("role");
 
   return (
-    <div className="w-64 bg-[#012a3a] min-h-[calc(100vh-72px)] text-white p-6 border-r border-cyan-500/20">
-
+    <div className="w-64 bg-[#012a3a] min-h-screen text-white p-6">
       <h2 className="text-xl font-bold mb-8 text-cyan-400">
-        Student Panel
+        {role === "teacher" ? "Teacher Panel" : "Student Panel"}
       </h2>
 
-      <ul className="space-y-5">
+      <ul className="space-y-4">
+
         <li
-          onClick={() => navigate("/student")}
-          className="hover:text-cyan-400 cursor-pointer"
+          onClick={() =>
+            role === "teacher"
+              ? navigate("/teacher-dashboard")
+              : navigate("/student-dashboard")
+          }
+          className="cursor-pointer hover:text-cyan-400"
         >
           Dashboard
         </li>
 
         <li
           onClick={() => navigate("/courses")}
-          className="hover:text-cyan-400 cursor-pointer"
+          className="cursor-pointer hover:text-cyan-400"
         >
           Courses
         </li>
 
-        <li
-          onClick={() => navigate("/exams")}
-          className="hover:text-cyan-400 cursor-pointer"
-        >
-          Exams
-        </li>
+        {role === "student" && (
+          <li
+            onClick={() => navigate("/exams")}
+            className="cursor-pointer hover:text-cyan-400"
+          >
+            Exams
+          </li>
+        )}
 
-        <li
-          onClick={() => navigate("/notes")}
-          className="hover:text-cyan-400 cursor-pointer"
-        >
-          Notes
-        </li>
-
-        <li
-          onClick={() => navigate("/profile")}
-          className="hover:text-cyan-400 cursor-pointer"
-        >
-          Profile
-        </li>
       </ul>
-
     </div>
   );
 };
